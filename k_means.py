@@ -3,7 +3,7 @@ from sklearn.base import BaseEstimator
 
 
 class KMeans(BaseEstimator):
-    def __init__(self, n_clusters, max_iter=100, random_seed=None, verbose=False):
+    def __init__(self, n_clusters, max_iter=100, random_seed=None, verbose=True):
         self.n_clusters = n_clusters
         self.max_iter = max_iter
         self.random_state = np.random.RandomState(random_seed)  #provides control over the randomness of the sampling process(random seed)
