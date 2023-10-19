@@ -1,11 +1,10 @@
 import numpy as np 
 from sklearn.base import BaseEstimator
-from sklearn.datasets import make_blobs
-from sklearn.preprocessing import StandardScaler
+
 
 class KMeans(BaseEstimator):
     def __init__(self, n_clusters, max_iter=100, random_seed=None, verbose=False):
-        self.n_clsuters = n_clusters
+        self.n_clusters = n_clusters
         self.max_iter = max_iter
         self.random_state = np.random.RandomState(random_seed)  #provides control over the randomness of the sampling process(random seed)
         self.verbose = verbose
@@ -57,8 +56,3 @@ class KMeans(BaseEstimator):
             
         
         
-X, y = make_blobs(n_samples=100, centers=5, random_state=-10)  
-X = StandardScaler().fit_transform(X)
-
-def plot_data(X):
-    sns.scatterplot(x=X[:, 0])
