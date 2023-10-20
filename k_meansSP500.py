@@ -54,6 +54,10 @@ returns['Returns'] = prices_df.pct_change().mean() * 252 # mean of daily returns
 returns["Volatility"] = prices_df.pct_change().std() * sqrt(252) # standard deviation of daily returns, annualized
 print(returns)
 
+
+# identify and remove outlier stocks
+returns.drop('VLTO', inplace=True)
+returns.drop('KVUE', inplace=True)
 # format data as a numpy array to feed into the K-Means algorithm
 data = np.asarray([np.asarray(returns['Returns']), np.asarray(returns['Volatility'])]).T 
 
@@ -75,7 +79,33 @@ fig = plt.figure(figsize=(15, 5))
 plt.plot(range(2, 20), WCSS)
 plt.grid(True)
 plt.title('Elbow Curve')
+plt.xlabel('k_clusters')
+plt.ylabel('WCSS')
 plt.show()
+
+# computing K-Means with K = 4 (4 clusters)
+k_means = KMeans(n_clusters=4, random_state=0)
+k_means.fit(X)
+
+# predict cluster labels for data
+idx = k_means.predict(X) # idx is an array containing the cluster labels for each data point
+
+# create dataframe with tickers and clusters they belong to
+details = [(name, cluster) for name, cluster in zip(returns.index, idx)] # create a list of tuples, each tuple is mapped from the 2 iterables, returns.index and idx. zip creates an iterable of pairs
+details_df = pd.DataFrame(details)
+details_df.columns = ['Ticker', 'Cluster']
+
+clusters_df = returns.reset_index()  # reset_index() dataframe method that resets index, current index becomes becomes a new column and default integer index is assigned to the dataframe
+clusters_df['Cluster'] = details_df['Cluster']
+clusters_df.columns = ['Ticker', 'Returns', 'Volatility', 'Cluster']
+
+# clusters plot
+fig = px.scatter(clusters_df, x='Returns', y='Volatility', color='Cluster', hover_data=['Ticker'])
+fig.update(layout_coloraxis_showscale=False)
+fig.show()
+
+
+# Performing K-Means with price per earnings ratio and dividend rate
 
 
 
