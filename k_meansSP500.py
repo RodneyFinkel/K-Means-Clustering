@@ -1,11 +1,17 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-
 import numpy as np
 import pandas as pd 
 # import pandas_datareader as dr 
 import yfinance as yf 
+
+import os
+import requests
+import alpha_vantage
+from decouple import config
+alpha_vantage_api_key = config("ALPHA_VANTAGE_API_KEY")
+API_URL = "https://www.alphavantage.co/query"
 
 from pylab import plot, show
 import matplotlib.pyplot as plt
@@ -58,6 +64,7 @@ print(returns)
 # identify and remove outlier stocks
 returns.drop('VLTO', inplace=True)
 returns.drop('KVUE', inplace=True)
+returns.drop('VFC', inplace=True)
 # format data as a numpy array to feed into the K-Means algorithm
 data = np.asarray([np.asarray(returns['Returns']), np.asarray(returns['Volatility'])]).T 
 
@@ -106,7 +113,7 @@ fig.update(layout_coloraxis_showscale=False)
 fig.show()
 
 
-# Performing K-Means with price per earnings ratio and dividend rate
+########################## Performing K-Means with price per earnings ratio and dividend rate ################################
 trailingPE_list = []
 dividendRate_list = []
 
