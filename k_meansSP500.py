@@ -103,7 +103,7 @@ details = [(name, cluster) for name, cluster in zip(returns.index, idx)] # creat
 details_df = pd.DataFrame(details)
 details_df.columns = ['Ticker', 'Cluster']
 
-clusters_df = returns.reset_index()  # reset_index() dataframe method that resets index, current index becomes becomes a new column and default integer index is assigned to the dataframe
+clusters_df = returns.reset_index()  # reset_index() dataframe method that resets index, current index becomes a new column and default(new)integer index is assigned to the dataframe
 clusters_df['Cluster'] = details_df['Cluster']
 clusters_df.columns = ['Ticker', 'Returns', 'Volatility', 'Cluster']
 
@@ -122,10 +122,10 @@ for t in tickers:
     ticker_info = tick.info # as of 20-10-2023 .info not working with yfinance
     
     try:
-        trailingPE = ticker_info['tralingPE']
+        trailingPE = ticker_info['trailingPE']
         trailingPE_list.append(trailingPE)
     except:
-        tralingPE_list.append('na')
+        trailingPE_list.append('na')
         
     try:
         dividendRate = ticker_info['dividendRate']
@@ -134,42 +134,42 @@ for t in tickers:
         dividendRate_list.append('na')
         
 # create dataframe to contain data
-sp_features_df = pd.DataFrame()
+sp_features_df2 = pd.DataFrame()
 
 # add ticker, trailingPE and dividendRate data
-sp_features_df['Ticker'] = tickers
-sp_features_df['trailingPE'] = trailingPE_list
-sp_features_df['dividendRate'] = dividendRate_list
+sp_features_df2['Ticker'] = tickers
+sp_features_df2['trailingPE'] = trailingPE_list
+sp_features_df2['dividendRate'] = dividendRate_list
 
 # shares with 'na' as dividend rate have no dividend so assign as 0
-sp_features_df['dividendRate'] = sp_features_df['dividendRate'].fillna(0)
+sp_features_df2['dividendRate'] = sp_features_df2['dividendRate'].fillna(0)
 
 # filter shares with 'na' as trailingPE
-df_mask = sp_features_df['trailingPE'] != 'na'
-sp_features_df = sp_features_df[df_mask]
+df_mask = sp_features_df2['trailingPE'] != 'na'
+sp_features_df2 = sp_features_df2[df_mask]
 
 # convert tralingPE numbers to float type
-sp_features_df['trailingPE'] = sp_features_df['trailingPE'].astype(float)
+sp_features_df2['trailingPE'] = sp_features_df2['trailingPE'].astype(float)
 
 # remove rows that have null values
-sp_features_df = sp_features_df.dropna()
+sp_features_df2 = sp_features_df2.dropna()
 
 # format data as a numpy array to feed into the K-Means algorithm again
-data2 = np.asarray([np.asarray(sp_features_df['trailingPE']), np.asarray(sp_features_df['dividendRate'])]).T 
+data2 = np.asarray([np.asarray(sp_features_df2['trailingPE']), np.asarray(sp_features_df2['dividendRate'])]).T 
 
 ###### determining best noumber of clusters using elbow method #####
 # imputer = IterativeImputer(max_iter=10, initial_strategy='mean', random_state=0)
 # imputer.fit(data2)
 # data_imputed = imputer.transform(data)
 # X = data_imputed
-X2 = data
+X2 = data2
 WCSS2 = []
 for k in range(2, 20):
     k_means = KMeans(n_clusters=k)
     k_means.fit(X2)
-    WCSS2.append(k_means.inertia_)
-fig2 = plt.figure(figsize(15, 5))
-
+    WCSS2.append(k_means.inertia_) # within cluster sum squares is NP hard!
+    
+fig2 = plt.figure(figsize=(15, 5))
 plt.plot(range(2, 20), WCSS2)
 plt.grid(True)
 plt.title('Elbow Curve')
@@ -178,7 +178,28 @@ plt.ylabel('WCSS2')
 plt.show()
 
     
-    
+ # computing K-Means with K = 3 
+k_means = KMeans(n_clusters=3, random_state=0)
+k_means.fit(X2)
+
+# predict cluster labels for data
+idx = k_means.predict(X2) 
+
+# create dataframe with tickers and clusters they belong to
+details2 = [(name, cluster) for name, cluster in zip(sp_features_df.index, idx)] # create a list of tuples, each tuple is mapped from the 2 iterables, sp_features_df and idx, zip creates an iterable of pairs
+details_df2 = pd.DataFrame(details2)
+details_df2.columns = ['Ticker', 'Cluster']
+
+cluster_df2 = sp_features_df2
+cluster_df2['Cluster'] = details_df2['Cluster']
+cluster_df2.columns = ['Ticker', 'trailingPE', 'dividendRate', 'Cluster']
+
+# Plot the clusters 
+fig = px.scatter(clusters_df2, x="dividendRate", y="trailingPE", color="Cluster", hover_data=["Ticker"])
+fig.update(layout_coloraxis_showscale=False)
+fig.show()
+
+
 
     
 
