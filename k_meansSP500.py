@@ -69,6 +69,7 @@ imputer.fit(data)
 data_imputed = imputer.transform(data)
 X = data_imputed
 
+###### determining best noumber of clusters using elbow method #####
 WCSS = [] # within cluster sum of squares
 for k in range(2, 20):
     k_means = KMeans(n_clusters = k) # creating an instance of the KMeans algorithm   
@@ -149,6 +150,7 @@ sp_features_df = sp_features_df.dropna()
 # format data as a numpy array to feed into the K-Means algorithm again
 data2 = np.asarray([np.asarray(sp_features_df['trailingPE']), np.asarray(sp_features_df['dividendRate'])]).T 
 
+###### determining best noumber of clusters using elbow method #####
 # imputer = IterativeImputer(max_iter=10, initial_strategy='mean', random_state=0)
 # imputer.fit(data2)
 # data_imputed = imputer.transform(data)

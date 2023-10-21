@@ -20,5 +20,5 @@ import yfinance as yf
 
 tick = yf.Ticker('MMM')
 print(tick)
-ticker_info = tick.get_info()
+ticker_info = tick.info['trailingPE']
 print(ticker_info)
