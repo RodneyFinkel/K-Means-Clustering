@@ -14,3 +14,11 @@
 #                                       random_state=None, 
 #                                       add_indicator=False, 
 #                                       keep_empty_features=False)
+
+
+import yfinance as yf
+
+tick = yf.Ticker('MMM')
+print(tick)
+ticker_info = tick.get_info()
+print(ticker_info)

@@ -106,7 +106,72 @@ fig.show()
 
 
 # Performing K-Means with price per earnings ratio and dividend rate
+trailingPE_list = []
+dividendRate_list = []
 
+for t in tickers:
+    tick = yf.Ticker(t)
+    ticker_info = tick.info # as of 20-10-2023 .info not working with yfinance
+    
+    try:
+        trailingPE = ticker_info['tralingPE']
+        trailingPE_list.append(trailingPE)
+    except:
+        tralingPE_list.append('na')
+        
+    try:
+        dividendRate = ticker_info['dividendRate']
+        dividendRate_list.append(dividendRate)
+    except:
+        dividendRate_list.append('na')
+        
+# create dataframe to contain data
+sp_features_df = pd.DataFrame()
+
+# add ticker, trailingPE and dividendRate data
+sp_features_df['Ticker'] = tickers
+sp_features_df['trailingPE'] = trailingPE_list
+sp_features_df['dividendRate'] = dividendRate_list
+
+# shares with 'na' as dividend rate have no dividend so assign as 0
+sp_features_df['dividendRate'] = sp_features_df['dividendRate'].fillna(0)
+
+# filter shares with 'na' as trailingPE
+df_mask = sp_features_df['trailingPE'] != 'na'
+sp_features_df = sp_features_df[df_mask]
+
+# convert tralingPE numbers to float type
+sp_features_df['trailingPE'] = sp_features_df['trailingPE'].astype(float)
+
+# remove rows that have null values
+sp_features_df = sp_features_df.dropna()
+
+# format data as a numpy array to feed into the K-Means algorithm again
+data2 = np.asarray([np.asarray(sp_features_df['trailingPE']), np.asarray(sp_features_df['dividendRate'])]).T 
+
+# imputer = IterativeImputer(max_iter=10, initial_strategy='mean', random_state=0)
+# imputer.fit(data2)
+# data_imputed = imputer.transform(data)
+# X = data_imputed
+X2 = data
+WCSS2 = []
+for k in range(2, 20):
+    k_means = KMeans(n_clusters=k)
+    k_means.fit(X2)
+    WCSS2.append(k_means.inertia_)
+fig2 = plt.figure(figsize(15, 5))
+
+plt.plot(range(2, 20), WCSS2)
+plt.grid(True)
+plt.title('Elbow Curve')
+plt.xlabel('k_clusters')
+plt.ylabel('WCSS2')
+plt.show()
+
+    
+    
+
+    
 
 
 
