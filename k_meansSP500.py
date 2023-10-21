@@ -154,10 +154,14 @@ sp_features_df2['trailingPE'] = sp_features_df2['trailingPE'].astype(float)
 # remove rows that have null values
 sp_features_df2 = sp_features_df2.dropna()
 
+# after first run of algorithm decided to elliminate outliers and run elbow method again
+df_mask2 = (sp_features_df2['trailingPE'] < 200) & (sp_features_df2['dividendRate'] < 5)
+sp_features_df2 = sp_features_df2[df_mask2]
+
 # format data as a numpy array to feed into the K-Means algorithm again
 data2 = np.asarray([np.asarray(sp_features_df2['trailingPE']), np.asarray(sp_features_df2['dividendRate'])]).T 
 
-###### determining best noumber of clusters using elbow method #####
+###### determining best number of clusters using elbow method #####
 # imputer = IterativeImputer(max_iter=10, initial_strategy='mean', random_state=0)
 # imputer.fit(data2)
 # data_imputed = imputer.transform(data)
@@ -178,15 +182,15 @@ plt.ylabel('WCSS2')
 plt.show()
 
     
- # computing K-Means with K = 3 
-k_means = KMeans(n_clusters=3, random_state=0)
+ # computing K-Means with K = 4 
+k_means = KMeans(n_clusters=4, random_state=0)
 k_means.fit(X2)
 
 # predict cluster labels for data
 idx = k_means.predict(X2) 
 
 # create dataframe with tickers and clusters they belong to
-details2 = [(name, cluster) for name, cluster in zip(sp_features_df.index, idx)] # create a list of tuples, each tuple is mapped from the 2 iterables, sp_features_df and idx, zip creates an iterable of pairs
+details2 = [(name, cluster) for name, cluster in zip(sp_features_df2.index, idx)] # create a list of tuples, each tuple is mapped from the 2 iterables, sp_features_df and idx, zip creates an iterable of pairs
 details_df2 = pd.DataFrame(details2)
 details_df2.columns = ['Ticker', 'Cluster']
 
