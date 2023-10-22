@@ -154,12 +154,24 @@ sp_features_df2['trailingPE'] = sp_features_df2['trailingPE'].astype(float)
 # remove rows that have null values
 sp_features_df2 = sp_features_df2.dropna()
 
-# after first run of algorithm decided to elliminate outliers and run elbow method again
+######### after first run of algorithm decided to elliminate outliers and apply MaxAbsScaler #############
 df_mask2 = (sp_features_df2['trailingPE'] < 200) & (sp_features_df2['dividendRate'] < 5)
 sp_features_df2 = sp_features_df2[df_mask2]
 
+# import MaxAbsScaler class from sklearn
+max_abs_scaler = preprocessing.MaxAbsScaler()
+# extract and reshape the 'trailingPE' and 'dividendRate' columns to column vectors
+trailingPE_array = np.array(sp_features_df2['trailingPE'].values).reshape(-1, 1)
+dividendRate_array = np.array(sp_features_df2['dividendRate'].values).reshape(-1, 1)
+
+# Apply the MaxAbsScaler and store the normalized values in new columns
+sp_features_df['trailingPE_norm'] = max_abs_scaler.fit_transform(trailingPE_array)
+sp_features_df['dividendRate_norm'] = max_abs_scaler.fit_transform(dividendRate_array)
+
+
+
 # format data as a numpy array to feed into the K-Means algorithm again
-data2 = np.asarray([np.asarray(sp_features_df2['trailingPE']), np.asarray(sp_features_df2['dividendRate'])]).T 
+data2 = np.asarray([np.asarray(sp_features_df2['trailingPE_norm']), np.asarray(sp_features_df2['dividendRate_norm'])]).T 
 
 ###### determining best number of clusters using elbow method #####
 # imputer = IterativeImputer(max_iter=10, initial_strategy='mean', random_state=0)
@@ -194,12 +206,15 @@ details2 = [(name, cluster) for name, cluster in zip(sp_features_df2.index, idx)
 details_df2 = pd.DataFrame(details2)
 details_df2.columns = ['Ticker', 'Cluster']
 
-cluster_df2 = sp_features_df2
-cluster_df2['Cluster'] = details_df2['Cluster']
-cluster_df2.columns = ['Ticker', 'trailingPE', 'dividendRate', 'Cluster']
+clusters_df2 = pd.DataFrame()
+clusters_df2['Ticker'] = sp_features_df2['Ticker']
+clusters_df2['trailingPE_norm'] = sp_features_df2['trailingPE_norm']
+clusters_df2['dividendRate_norm'] = sp_features_df2['dividendRate_norm']
+clusters_df2['Cluster'] = details_df2[1].values
+clusters_df2.columns = ['Ticker', 'trailingPE_norm', 'dividendRate_norm', 'Cluster']
 
 # Plot the clusters 
-fig = px.scatter(clusters_df2, x="dividendRate", y="trailingPE", color="Cluster", hover_data=["Ticker"])
+fig = px.scatter(clusters_df2, x="dividendRate_norm", y="trailingPE_norm", color="Cluster", hover_data=["Ticker"])
 fig.update(layout_coloraxis_showscale=False)
 fig.show()
 
