@@ -1,5 +1,5 @@
 import yfinance as yf
-tick = yf.Ticker('IBM')
+tick = yf.Ticker('TSLA')
 print(tick)
 ticker_info = tick.info
 print(ticker_info)

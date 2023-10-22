@@ -7,11 +7,11 @@ import pandas as pd
 import yfinance as yf 
 
 import os
-import requests
-import alpha_vantage
-from decouple import config
-alpha_vantage_api_key = config("ALPHA_VANTAGE_API_KEY")
-API_URL = "https://www.alphavantage.co/query"
+# import requests
+# import alpha_vantage
+# from decouple import config
+# alpha_vantage_api_key = config("ALPHA_VANTAGE_API_KEY")
+# API_URL = "https://www.alphavantage.co/query"
 
 from pylab import plot, show
 import matplotlib.pyplot as plt
@@ -119,7 +119,7 @@ dividendRate_list = []
 
 for t in tickers:
     tick = yf.Ticker(t)
-    ticker_info = tick.info # as of 20-10-2023 .info not working with yfinance
+    ticker_info = tick.info # as of 20-10-2023 .info not working with yfinance. WORKAROUND with USA VPN
     
     try:
         trailingPE = ticker_info['trailingPE']
