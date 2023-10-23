@@ -18,6 +18,8 @@ from sklearn import preprocessing
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
+from concurrent.futures import ThreadPoolExecutor
+
 sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
 
 data_table = pd.read_html(sp500_url) 
@@ -27,7 +29,58 @@ tickers = [s.replace('\n', '') for s in tickers]
 tickers = [s.replace(',', '') for s in tickers]
 tickers = [s.replace(' ', '') for s in tickers]
 
-# tickers = ["TSLA", "IBM", "INTC", "MSFT", "GOOGL", "AOS", "COF", "ZTS", "ZION", "WDC", "WRK", "META", "AMZN", "GE", "MCD"]
+# tickers = ["TSLA", "IBM", "INTC", "MSFT", "GOOGL", "AOS", "COF", "ZTS", "ZION", "WDC", "WRK", "META", "AMZN", "GE", "MCD",
+#            'VLTO', 'SEDG', 'ENPH', 'MRNA']
+
+
+####### CONCURRENT FETCHING WITH ThreadPoolExecutor
+# prices_list = []
+# def fetch_prices(ticker):
+#     prices = yf.download(ticker, start='2020-01-01')['Adj Close']
+#     prices = pd.DataFrame(prices)
+#     prices.columns = [ticker]
+#     return prices
+      
+######################### # Create ThreadPoolExecutor with specified number of workers (adjust this as needed) ##########
+
+# with ThreadPoolExecutor(max_workers=5) as executor:
+#     # Executor fetches prices concurrently
+#     futures = {executor.submit(fetch_prices, ticker): ticker for ticker in tickers}
+
+# # Collect results
+# for future in futures:
+#     ticker = futures[future]
+#     prices = future.result()
+#     if prices is not None:
+#         prices_list.append(prices)
+
+# print(prices_list)
+
+# rnd_expense_ratio_list = []
+# rnd_revenue_ratio_list = []
+# no_data_available = []
+# for ticker in tickers:
+#     try: 
+#         t = yf.Ticker(ticker)
+#         indicators = t.income_stmt
+#         rnd = pd.DataFrame(indicators.loc['Research And Development'])
+#         rnd_mean = rnd.iloc[:3, 0].values.mean()
+        
+#         operating_expense = pd.DataFrame(indicators.loc['Operating Expense'])
+#         operating_expense_mean = operating_expense.iloc[:3, 0].values.mean()
+        
+#         total_revenue = pd.DataFrame(indicators.loc['Total Revenue'])
+#         total_revenue_mean = total_revenue.iloc[:3, 0].values.mean()
+        
+#         rnd_expense_ratio = (rnd_mean / operating_expense_mean)*100
+#         rnd_expense_ratio_list.append(rnd_expense_ratio)
+        
+#         rnd_revenue_ratio = (rnd_mean / total_revenue_mean)*100
+#         rnd_revenue_ratio_list.append(rnd_revenue_ratio)
+#     except:
+#         no_data_available.append(ticker)
+    
+###############################################
 prices_list = []
 rnd_expense_ratio_list = []
 rnd_revenue_ratio_list = []
@@ -81,7 +134,18 @@ returns["RnD_Expense_Ratio"] = rnd_expense_ratio_list
 returns["RnD_Revenue_Ratio"] = rnd_revenue_ratio_list
 
 clusters_multi_df = returns
-print(clusters_multi_df)
+
+# Remove outliers
+# outliers = ['VLTO', 'SEDG', 'ENPH', 'MRNA', 'TSLA']
+# clusters_multi_df = clusters_multi_df.reset_index()
+# print(clusters_multi_df.iloc[:, 0])
+
+# for outlier in outliers:
+#     clusters_multi_df.drop(clusters_multi_df[(clusters_multi_df['index'] == outlier)].index, inplace=True)
+# cluster_multi_df = clusters_multi_df.set_index('index')
+# print(clusters_multi_df)
+
+
 
 # Format the data as a numpy array to feed into the K-Means algorithm
 data = np.asarray([np.asarray(clusters_multi_df['Returns']), 
@@ -97,20 +161,20 @@ X = data_imputed
 
 ###### determining best number of clusters using elbow method #####
 WCSS = [] # within cluster sum of squares
-for k in range(2, 10):
+for k in range(2, 20):
     k_means = KMeans(n_clusters = k) # creating an instance of the KMeans algorithm   
     k_means.fit(X)
     WCSS.append(k_means.inertia_)
 fig = plt.figure(figsize=(15, 5))
 
-plt.plot(range(2, 10), WCSS)
+plt.plot(range(2, 20), WCSS)
 plt.grid(True)
 plt.title('Elbow Curve')
 plt.xlabel('k_clusters')
 plt.ylabel('WCSS')
 plt.show()
 
-# computing K-Means++
+# computing K-Means++ clusters 4 and 5
 k_means_optimum = KMeans(n_clusters=4, init='k-means++', random_state=42)
 idx = k_means_optimum.fit_predict(X)   # no need to access any attributes of k_means.fit(X) so use fit_predict(X)
 
