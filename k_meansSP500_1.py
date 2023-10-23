@@ -39,6 +39,7 @@ tickers = [s.replace(' ', '') for s in tickers]
 # Download prices to calculate mean of daily returns and standard deviation of daily return
 prices_list = []
 
+###########     Using ThreadPoolExecutor for concurrency
 # def fetch_prices(ticker):
 #     try:
 #         prices = yf.download(ticker, start='2020-01-01')['Adj Close']

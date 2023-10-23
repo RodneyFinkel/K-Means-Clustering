@@ -18,16 +18,16 @@ from sklearn import preprocessing
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
-# sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
 
-# data_table = pd.read_html(sp500_url) 
-# tickers = data_table[0]['Symbol'].values.tolist()
-# not neccessary but will keep in case url is changed
-# tickers = [s.replace('\n', '') for s in tickers]
-# tickers = [s.replace(',', '') for s in tickers]
-# tickers = [s.replace(' ', '') for s in tickers]
+data_table = pd.read_html(sp500_url) 
+tickers = data_table[0]['Symbol'].values.tolist()
+#not neccessary but will keep in case url is changed
+tickers = [s.replace('\n', '') for s in tickers]
+tickers = [s.replace(',', '') for s in tickers]
+tickers = [s.replace(' ', '') for s in tickers]
 
-tickers = ["TSLA", "IBM", "INTC", "MSFT", "GOOGL", "AOS", "COF", "ZTS", "ZION", "WDC", "WRK", "META", "AMZN", "GE", "MCD"]
+# tickers = ["TSLA", "IBM", "INTC", "MSFT", "GOOGL", "AOS", "COF", "ZTS", "ZION", "WDC", "WRK", "META", "AMZN", "GE", "MCD"]
 prices_list = []
 rnd_expense_ratio_list = []
 rnd_revenue_ratio_list = []
@@ -80,13 +80,14 @@ returns["RnD_Expense_Ratio"] = rnd_expense_ratio_list
 # Define the column rnd_revenue_ratio
 returns["RnD_Revenue_Ratio"] = rnd_revenue_ratio_list
 
-print(returns)
+clusters_multi_df = returns
+print(clusters_multi_df)
 
 # Format the data as a numpy array to feed into the K-Means algorithm
-data = np.asarray([np.asarray(returns['Returns']), 
-                   np.asarray(returns['Volatility']), 
-                   np.asarray(returns['RnD_Expense_Ratio']), 
-                   np.asarray(returns['RnD_Revenue_Ratio'])]).T
+data = np.asarray([np.asarray(clusters_multi_df['Returns']), 
+                   np.asarray(clusters_multi_df['Volatility']), 
+                   np.asarray(clusters_multi_df['RnD_Expense_Ratio']), 
+                   np.asarray(clusters_multi_df['RnD_Revenue_Ratio'])]).T
 
 # if X has missing data use Iterative imputer to generate missing values based on relationship between the variables themselves
 imputer = IterativeImputer(max_iter=10, initial_strategy='mean', random_state=0)
@@ -96,15 +97,47 @@ X = data_imputed
 
 ###### determining best number of clusters using elbow method #####
 WCSS = [] # within cluster sum of squares
-for k in range(2, 3):
+for k in range(2, 10):
     k_means = KMeans(n_clusters = k) # creating an instance of the KMeans algorithm   
     k_means.fit(X)
     WCSS.append(k_means.inertia_)
 fig = plt.figure(figsize=(15, 5))
 
-plt.plot(range(2, 20), WCSS)
+plt.plot(range(2, 10), WCSS)
 plt.grid(True)
 plt.title('Elbow Curve')
 plt.xlabel('k_clusters')
 plt.ylabel('WCSS')
 plt.show()
+
+# computing K-Means++
+k_means_optimum = KMeans(n_clusters=4, init='k-means++', random_state=42)
+idx = k_means_optimum.fit_predict(X)   # no need to access any attributes of k_means.fit(X) so use fit_predict(X)
+
+# create a list of tuples, each tuple is mapped from the 2 iterables, clusters_multi_df.index and idx. zip creates an iterable of pairs
+details = [(name, cluster) for name, cluster in zip(clusters_multi_df.index, idx)] 
+details_df = pd.DataFrame(details)
+details_df.columns = ['Ticker', 'Cluster']
+
+clusters_df = clusters_multi_df.reset_index()
+clusters_df['Cluster'] = details_df['Cluster']
+clusters_df.columns = ['Ticker', 'Returns', 'Volatility', 'RnD_Expense_Ratio', 'RnD_Revenue_Ratio', 'Cluster']
+
+# 3-d plot
+fig = px.scatter_3d(clusters_df, 
+                    x='Returns', 
+                    y='Volatility', 
+                    z='RnD_Expense_Ratio',
+                    color='Cluster',
+                    hover_data=['Ticker']
+                    )
+fig2 = px.scatter_3d(clusters_df, 
+                    x='Returns', 
+                    y='Volatility', 
+                    z='RnD_Revenue_Ratio',
+                    color='Cluster',
+                    hover_data=['Ticker']
+                    )
+
+fig.show()
+fig2.show()
