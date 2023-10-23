@@ -34,66 +34,32 @@ tickers = [s.replace(' ', '') for s in tickers]
 
 
 ####### CONCURRENT FETCHING WITH ThreadPoolExecutor
-# prices_list = []
-# def fetch_prices(ticker):
-#     prices = yf.download(ticker, start='2020-01-01')['Adj Close']
-#     prices = pd.DataFrame(prices)
-#     prices.columns = [ticker]
-#     return prices
-      
-######################### # Create ThreadPoolExecutor with specified number of workers (adjust this as needed) ##########
-
-# with ThreadPoolExecutor(max_workers=5) as executor:
-#     # Executor fetches prices concurrently
-#     futures = {executor.submit(fetch_prices, ticker): ticker for ticker in tickers}
-
-# # Collect results
-# for future in futures:
-#     ticker = futures[future]
-#     prices = future.result()
-#     if prices is not None:
-#         prices_list.append(prices)
-
-# print(prices_list)
-
-# rnd_expense_ratio_list = []
-# rnd_revenue_ratio_list = []
-# no_data_available = []
-# for ticker in tickers:
-#     try: 
-#         t = yf.Ticker(ticker)
-#         indicators = t.income_stmt
-#         rnd = pd.DataFrame(indicators.loc['Research And Development'])
-#         rnd_mean = rnd.iloc[:3, 0].values.mean()
-        
-#         operating_expense = pd.DataFrame(indicators.loc['Operating Expense'])
-#         operating_expense_mean = operating_expense.iloc[:3, 0].values.mean()
-        
-#         total_revenue = pd.DataFrame(indicators.loc['Total Revenue'])
-#         total_revenue_mean = total_revenue.iloc[:3, 0].values.mean()
-        
-#         rnd_expense_ratio = (rnd_mean / operating_expense_mean)*100
-#         rnd_expense_ratio_list.append(rnd_expense_ratio)
-        
-#         rnd_revenue_ratio = (rnd_mean / total_revenue_mean)*100
-#         rnd_revenue_ratio_list.append(rnd_revenue_ratio)
-#     except:
-#         no_data_available.append(ticker)
-    
-###############################################
 prices_list = []
+def fetch_prices(ticker):
+    prices = yf.download(ticker, start='2020-01-01')['Adj Close']
+    prices = pd.DataFrame(prices)
+    prices.columns = [ticker]
+    return prices
+      
+######################## # Create ThreadPoolExecutor with specified number of workers (adjust this as needed) ##########
+
+with ThreadPoolExecutor(max_workers=5) as executor:
+    # Executor fetches prices concurrently
+    futures = {executor.submit(fetch_prices, ticker): ticker for ticker in tickers}
+
+# Collect results
+for future in futures:
+    ticker = futures[future]
+    prices = future.result()
+    if prices is not None:
+        prices_list.append(prices)
+
+print(prices_list)
+
 rnd_expense_ratio_list = []
 rnd_revenue_ratio_list = []
 no_data_available = []
 for ticker in tickers:
-    try:
-        prices = yf.download(ticker, start='2020-01-01')['Adj Close']   
-        prices = pd.DataFrame(prices) 
-        prices.columns = [ticker]
-        prices_list.append(prices)        
-    except:
-        pass
-    
     try: 
         t = yf.Ticker(ticker)
         indicators = t.income_stmt
@@ -113,6 +79,41 @@ for ticker in tickers:
         rnd_revenue_ratio_list.append(rnd_revenue_ratio)
     except:
         no_data_available.append(ticker)
+    
+############# CONCURRENT FETCHING WILL GET THROTTLED BY YFINANCE, USE THIS SCRIPT WHEN IT DOES #################
+
+# prices_list = []
+# rnd_expense_ratio_list = []
+# rnd_revenue_ratio_list = []
+# no_data_available = []
+# for ticker in tickers:
+#     try:
+#         prices = yf.download(ticker, start='2020-01-01')['Adj Close']   
+#         prices = pd.DataFrame(prices) 
+#         prices.columns = [ticker]
+#         prices_list.append(prices)        
+#     except:
+#         pass
+    
+#     try: 
+#         t = yf.Ticker(ticker)
+#         indicators = t.income_stmt
+#         rnd = pd.DataFrame(indicators.loc['Research And Development'])
+#         rnd_mean = rnd.iloc[:3, 0].values.mean()
+        
+#         operating_expense = pd.DataFrame(indicators.loc['Operating Expense'])
+#         operating_expense_mean = operating_expense.iloc[:3, 0].values.mean()
+        
+#         total_revenue = pd.DataFrame(indicators.loc['Total Revenue'])
+#         total_revenue_mean = total_revenue.iloc[:3, 0].values.mean()
+        
+#         rnd_expense_ratio = (rnd_mean / operating_expense_mean)*100
+#         rnd_expense_ratio_list.append(rnd_expense_ratio)
+        
+#         rnd_revenue_ratio = (rnd_mean / total_revenue_mean)*100
+#         rnd_revenue_ratio_list.append(rnd_revenue_ratio)
+#     except:
+#         no_data_available.append(ticker)
 
 # Filter prices_list to remove elements in no_data_available
 prices_list = [i for i in prices_list if i.columns[0] not in no_data_available]
@@ -143,7 +144,8 @@ clusters_multi_df = returns
 # for outlier in outliers:
 #     clusters_multi_df.drop(clusters_multi_df[(clusters_multi_df['index'] == outlier)].index, inplace=True)
 # cluster_multi_df = clusters_multi_df.set_index('index')
-# print(clusters_multi_df)
+
+print(clusters_multi_df)
 
 
 
