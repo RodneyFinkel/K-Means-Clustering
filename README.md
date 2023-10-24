@@ -12,7 +12,8 @@ The K-Means algorithm is initialized with k-means++ binning for more intelligent
 A custom K-means algorithm class is coded to demonstrate how the algorithm is put together from 1st principles
 
 
-INSTALLATION Clone repo Navigate to project directory run: pip install -r requirements.txt run the projects with: 
+INSTALLATION Clone repo Navigate to project directory run: pip install -r requirements.txt 
+Run the projects with: 
 - k_means++_3d.py , can use concurrent.futures library for concurrent fetching from yfinance alternatively uncomment the script below
 the ThreadPoolExcutor is throttling does occur
 - k_meansSP500_2.py , yfinance is currently problematic with .info attribute/method. Workaround is to use USA VPN
