@@ -137,17 +137,8 @@ returns["RnD_Revenue_Ratio"] = rnd_revenue_ratio_list
 clusters_multi_df = returns
 
 # Remove outliers
-# outliers = ['VLTO', 'SEDG', 'ENPH', 'MRNA', 'TSLA']
-# clusters_multi_df = clusters_multi_df.reset_index()
-# print(clusters_multi_df.iloc[:, 0])
-
-# for outlier in outliers:
-#     clusters_multi_df.drop(clusters_multi_df[(clusters_multi_df['index'] == outlier)].index, inplace=True)
-# cluster_multi_df = clusters_multi_df.set_index('index')
-
-print(clusters_multi_df)
-
-
+outliers = ['VLTO', 'SEDG', 'ENPH', 'MRNA', 'TSLA']    
+clusters_multi_df.drop(outliers, inplace=True)
 
 # Format the data as a numpy array to feed into the K-Means algorithm
 data = np.asarray([np.asarray(clusters_multi_df['Returns']), 
