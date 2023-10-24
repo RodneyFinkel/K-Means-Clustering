@@ -16,7 +16,7 @@ INSTALLATION Clone repo Navigate to project directory run: pip install -r requir
 Run the projects with: 
 - k_means++_3d.py , can use concurrent.futures library for concurrent fetching from yfinance alternatively uncomment the script below
 the ThreadPoolExcutor if throttling occurs
-- k_meansSP500_2.py , yfinance is currently problematic with .info attribute/method. Workaround is to use USA VPN
+- k_meansSP500_2.py , yfinance is currently problematic with .info attribute/method. Workaround is to use VPN with USA location
 - k_meansSP500_1.py , 
 - k_means_app.py to use the custom KMeans class inside: k_means.py
 
