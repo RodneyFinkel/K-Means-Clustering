@@ -34,14 +34,14 @@ tickers = [s.replace(' ', '') for s in tickers]
 
 
 ####### CONCURRENT FETCHING WITH ThreadPoolExecutor
-# prices_list = []
-# def fetch_prices(ticker):
-#     prices = yf.download(ticker, start='2020-01-01')['Adj Close']
-#     prices = pd.DataFrame(prices)
-#     prices.columns = [ticker]
-#     return prices
+prices_list = []
+def fetch_prices(ticker):
+    prices = yf.download(ticker, start='2020-01-01')['Adj Close']
+    prices = pd.DataFrame(prices)
+    prices.columns = [ticker]
+    return prices
       
-# ######################## # Create ThreadPoolExecutor with specified number of workers (adjust this as needed) ##########
+######################## # Create ThreadPoolExecutor with specified number of workers (adjust this as needed) ##########
 
 # with ThreadPoolExecutor(max_workers=5) as executor:
 #     # Executor fetches prices concurrently
@@ -137,7 +137,7 @@ returns["RnD_Revenue_Ratio"] = rnd_revenue_ratio_list
 clusters_multi_df = returns
 
 # Remove outliers
-outliers = ['VLTO', 'SEDG', 'ENPH', 'MRNA', 'TSLA']    
+outliers = ['VLTO', 'ENPH', 'MRNA', 'TSLA']    
 clusters_multi_df.drop(outliers, inplace=True)
 
 # Format the data as a numpy array to feed into the K-Means algorithm
