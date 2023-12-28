@@ -93,7 +93,8 @@ for ticker in tickers:
         prices.columns = [ticker]
         prices_list.append(prices)        
     except:
-        pass
+        print(f"No data available for {ticker}.")
+       
     
     try: 
         t = yf.Ticker(ticker)
