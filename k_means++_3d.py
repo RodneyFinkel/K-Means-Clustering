@@ -137,7 +137,7 @@ returns["RnD_Revenue_Ratio"] = rnd_revenue_ratio_list
 clusters_multi_df = returns
 
 # Remove outliers
-outliers = ['VLTO', 'ENPH', 'MRNA', 'TSLA']    
+outliers = ['VLTO', 'ENPH', 'MRNA', 'TSLA']    # SEDG was removed as an outlier due to market movements
 clusters_multi_df.drop(outliers, inplace=True)
 
 # Format the data as a numpy array to feed into the K-Means algorithm
