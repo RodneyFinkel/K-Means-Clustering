@@ -18,7 +18,7 @@ from sklearn import preprocessing
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
-from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
 
 sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
 
@@ -31,35 +31,81 @@ tickers = [s.replace(' ', '') for s in tickers]
 
 # tickers = ["TSLA", "IBM", "INTC", "MSFT", "GOOGL", "AOS", "COF", "ZTS", "ZION", "WDC", "WRK", "META", "AMZN", "GE", "MCD",
 #            'VLTO', 'SEDG', 'ENPH', 'MRNA']
-
-
-####### CONCURRENT FETCHING WITH ThreadPoolExecutor
+     
+####################### CONCURRENT FETCHING WITH ThreadPoolExecutor ##########
 prices_list = []
+rnd_expense_ratio_list = []
+rnd_revenue_ratio_list = []
+no_data_available = []
+
 def fetch_prices(ticker):
-    prices = yf.download(ticker, start='2020-01-01')['Adj Close']
-    prices = pd.DataFrame(prices)
-    prices.columns = [ticker]
-    return prices
-      
-######################## # Create ThreadPoolExecutor with specified number of workers (adjust this as needed) ##########
+    print(f"extracting {ticker} data")
+    try:
+        ticker_obj = yf.Ticker(ticker)
+        prices = ticker_obj.history(start='2020-01-01')['Close']
+        prices = pd.DataFrame(prices)
+        prices.columns = [ticker]
+        print('Debug test1 passed')
+        return prices
+    except:
+        print(f"No data available for {ticker}.")
+        return None
 
-# with ThreadPoolExecutor(max_workers=5) as executor:
-#     # Executor fetches prices concurrently
-#     futures = {executor.submit(fetch_prices, ticker): ticker for ticker in tickers}
+def calculate_ratios(ticker):
+    print(f"Calculating {ticker} ratios")
+    try:
+        t = yf.Ticker(ticker)
+        indicators = t.income_stmt
+        rnd = pd.DataFrame(indicators.loc['Research And Development'])
+        rnd_mean = rnd.iloc[:3, 0].values.mean()
 
-# # Collect results
-# for future in futures:
-#     ticker = futures[future]
-#     prices = future.result()
-#     if prices is not None:
-#         prices_list.append(prices)
+        operating_expense = pd.DataFrame(indicators.loc['Operating Expense'])
+        operating_expense_mean = operating_expense.iloc[:3, 0].values.mean()
 
-# print(prices_list)
+        total_revenue = pd.DataFrame(indicators.loc['Total Revenue'])
+        total_revenue_mean = total_revenue.iloc[:3, 0].values.mean()
 
+        rnd_expense_ratio = (rnd_mean / operating_expense_mean) * 100
+        rnd_expense_ratio_list.append(rnd_expense_ratio)
+
+        rnd_revenue_ratio = (rnd_mean / total_revenue_mean) * 100
+        rnd_revenue_ratio_list.append(rnd_revenue_ratio)
+        print('Debug test2 passed')
+    except:
+        no_data_available.append(ticker)
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    futures = [executor.submit(fetch_prices, ticker) for ticker in tickers]
+
+    # Collect prices results
+    for future in concurrent.futures.as_completed(futures):
+        result = future.result()
+        if result is not None:
+            prices_list.append(result)
+
+    # Calculate ratios
+    futures = [executor.submit(calculate_ratios, ticker) for ticker in tickers]
+
+    # Wait for ratio calculations to complete
+    concurrent.futures.wait(futures)
+
+    
+############# CONCURRENT FETCHING WILL GET THROTTLED BY YFINANCE, USE THIS SCRIPT WHEN IT DOES #################
+
+# prices_list = []
 # rnd_expense_ratio_list = []
 # rnd_revenue_ratio_list = []
 # no_data_available = []
 # for ticker in tickers:
+#     try:
+#         prices = yf.download(ticker, start='2020-01-01')['Adj Close']   
+#         prices = pd.DataFrame(prices) 
+#         prices.columns = [ticker]
+#         prices_list.append(prices)        
+#     except:
+#         print(f"No data available for {ticker}.")
+       
+    
 #     try: 
 #         t = yf.Ticker(ticker)
 #         indicators = t.income_stmt
@@ -79,42 +125,6 @@ def fetch_prices(ticker):
 #         rnd_revenue_ratio_list.append(rnd_revenue_ratio)
 #     except:
 #         no_data_available.append(ticker)
-    
-############# CONCURRENT FETCHING WILL GET THROTTLED BY YFINANCE, USE THIS SCRIPT WHEN IT DOES #################
-
-prices_list = []
-rnd_expense_ratio_list = []
-rnd_revenue_ratio_list = []
-no_data_available = []
-for ticker in tickers:
-    try:
-        prices = yf.download(ticker, start='2020-01-01')['Adj Close']   
-        prices = pd.DataFrame(prices) 
-        prices.columns = [ticker]
-        prices_list.append(prices)        
-    except:
-        print(f"No data available for {ticker}.")
-       
-    
-    try: 
-        t = yf.Ticker(ticker)
-        indicators = t.income_stmt
-        rnd = pd.DataFrame(indicators.loc['Research And Development'])
-        rnd_mean = rnd.iloc[:3, 0].values.mean()
-        
-        operating_expense = pd.DataFrame(indicators.loc['Operating Expense'])
-        operating_expense_mean = operating_expense.iloc[:3, 0].values.mean()
-        
-        total_revenue = pd.DataFrame(indicators.loc['Total Revenue'])
-        total_revenue_mean = total_revenue.iloc[:3, 0].values.mean()
-        
-        rnd_expense_ratio = (rnd_mean / operating_expense_mean)*100
-        rnd_expense_ratio_list.append(rnd_expense_ratio)
-        
-        rnd_revenue_ratio = (rnd_mean / total_revenue_mean)*100
-        rnd_revenue_ratio_list.append(rnd_revenue_ratio)
-    except:
-        no_data_available.append(ticker)
 
 # Filter prices_list to remove elements in no_data_available
 prices_list = [i for i in prices_list if i.columns[0] not in no_data_available]
