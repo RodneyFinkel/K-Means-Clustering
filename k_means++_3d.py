@@ -126,6 +126,9 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 #     except:
 #         no_data_available.append(ticker)
 
+
+######################################
+
 # Filter prices_list to remove elements in no_data_available
 prices_list = [i for i in prices_list if i.columns[0] not in no_data_available]
      
