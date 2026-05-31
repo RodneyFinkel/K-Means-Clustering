@@ -13,11 +13,20 @@ from advanced_diagnostics import AdvancedDiagnostics
 # --- Streamlit Layout Configuration ---
 st.set_page_config(layout="wide", page_title="Market Forensics Studio")
 
-st.title("S&P 500 Equity Archetype & Market Diagnostics Studio")
+st.title("Decoupling Two R&D Ratios")
 st.markdown("""
-This full-stack analytical platform decomposes S&P 500 corporate fundamentals via unsupervised machine learning 
-to uncover latent economic risk archetypes. By isolating non-linear relationships between capital expenditure channels, 
-the system highlights hidden corporate lifecycles and risk exposures that linear equity screeners fail to detect.
+This entire project is built upon a fundamental quantitative finance paradox: The Multicollinearity vs. Latent Information Dilemma.
+When looking at corporate financial metrics, a traditional linear regression or simple equity screener treats highly correlated variables as redundant data noise. The two metrics at the center of this study—R&D % of Operating Expenses (Opex) and R&D % of Revenue—are mathematically and economically bound to share a high degree of correlation. If a company scales its research budget, both ratios move upward.
+The core research question is: Does this high correlation mean the second ratio adds zero new information, or can an unsupervised machine learning pipeline strip away the redundant variance to isolate a clean, non-trivial structural market signal?
+The empirical results and the mathematical architecture of your dashboard prove that not only is there a distinct signal, but the divergence between these two ratios is exactly where the most extreme corporate archetypes are isolated.
+
+The Residual: The "meaningful" result is not that they are correlated; it is that certain companies are outliers from that correlation. When you apply PCA Whitening, you are effectively rotating the coordinate system so that the "correlation axis" is one dimension, and the "deviation axis" is another. Your clustering algorithm is finding companies that are "off the line."
+1. The Core Thesis: Decoupling the Two R&D Ratios
+To understand why these ratios are not redundant, we must first break down the distinct economic realities they measure:
+R&D % of Opex (Internal Budget Prioritization): This metric answers the question: Of the capital allocated to running the daily business operation, how much is dedicated to future innovation versus current maintenance? It reveals strategic intent and structural corporate DNA. A software firm and a manufacturing plant might have identical revenues, but if the software firm commits 45% of its operating footprint to engineering, it is structurally optimized for innovation.
+R&D % of Revenue (Top-Line Reinvestment Intensity & Efficiency): This metric answers the question: How heavily must current sales support the research pipeline, or how dependent is current monetization on continuous laboratory expenditure? It serves as a proxy for corporate maturity and operational leverage.
+If these two ratios were truly redundant, every high-R&D firm would fall into a single, uniform cluster. Instead, the algorithm utilizes the interaction between them to separate mature giants from highly volatile speculations.
+
 """)
 
 # --- Sidebar: Control Room ---
@@ -135,7 +144,7 @@ if st.session_state.get('pipeline_executed'):
         st.subheader("Empirical Archetype Interpretations")
         st.markdown("""
         * **Cluster 0 — High-Beta Cyclicals / Market Chasers:** High annualized volatility (~41%) but near-negligible R&D reinvestment intensities (~1.2% of Opex). These companies move strongly with structural market beta and macroeconomic trends (e.g., energy, financials, commodities) rather than proprietary lab-driven innovation cycles.
-        * **Cluster 1 — The Innovation Vanguard / Tech Elite:** The structural engines of equity market outperformance. Delivering an elite **36.2% annualized return** while aggressively allocating **46.6% of their operational expenses** back into R&D pipelines. This proves a high-efficiency translation of innovation into commercial capital growth.
+        * **Cluster 1 — Tech Elite:** The structural engines of equity market outperformance. Delivering an elite **36.2% annualized return** while aggressively allocating **46.6% of their operational expenses** back into R&D pipelines. This proves a high-efficiency translation of innovation into commercial capital growth.
         * **Cluster 2 — Pipeline Speculators / High-Burn Bets:** A highly concentrated, high-convexity domain (typically ~5 specialized biotech or bleeding-edge tech firms) where R&D consumes an astonishing **71.3% of top-line revenue**. These represent high-convexity asset footprints heavily sensitive to capital access and discount rates.
         * **Cluster 3 — Defensive Structural Bedrock / Value Stalwarts:** The massive, low-volatility foundation of the index (~311 assets). Characterized by stable pricing risk profiles (~26% volatility) and minimal R&D demands. These operate as steady capital protectors and dividend engines (e.g., utilities, consumer staples).
         """)
