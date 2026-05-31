@@ -1,50 +1,64 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 from sp500_rnd_clustering import SP500RNDClusterPipeline
+from advanced_diagnostics import AdvancedDiagnostics
 
-st.set_page_config(page_title="S&P 500 R&D Clustering", layout="wide")
-st.title("S&P 500 Clustering: Risk, Return & R&D Intensity")
+# --- Page Setup ---
+st.set_page_config(layout="wide", page_title="Market Forensics Platform")
+
+st.title("📊 Equity Archetype & Market Diagnostics Platform")
 st.markdown("""
-### Core Methodology & Architecture
-This pipeline combines daily pricing aggregators with direct statutory SEC EDGAR JSON streaming to cluster S&P 500 assets based on historical risk-return dynamics and structural innovation spending.
-
-* **The Geometric Distance Paradox:** Standard $K$-Means relies on Euclidean distance, which assumes features are orthogonal and isotropic. In financial assets, **Returns** and **Volatility** are inherently correlated, and operational accounting ratios are distributed on entirely separate scales. Standard clustering would inadvertently double-count variance along correlated paths.
-* **The Solution (PCA Whitening):** Toggling **PCA Whitening** projects the scaled feature framework onto its principal orthogonal eigenvectors, dividing each by the square root of its respective eigenvalue. Geometrically, computing standard Euclidean distance within this whitened coordinate space is mathematically identical to minimizing the **Mahalanobis Distance** within the raw feature space, completely neutralizing covariance structures and scaling anomalies natively.
+This research platform decomposes S&P 500 fundamentals using unsupervised machine learning to identify 
+structural risk archetypes. We use **PCA-Whitening** to transform features into a decorrelated Mahalanobis space, 
+enabling the identification of non-linear relationships that traditional linear models obscure.
 """)
 
-st.sidebar.header("Controls")
-force_refresh = st.sidebar.checkbox("Force refresh data", False)
-use_whitening = st.sidebar.checkbox("Use PCA Whitening (Mahalanobis distance)", value=True)
-exclude_list = st.sidebar.text_input("Exclude tickers (comma separated)", "VLTO,ENPH,MRNA,TSLA")
+# --- Sidebar: Execution Control ---
+st.sidebar.header("Pipeline Controls")
+force_refresh = st.sidebar.checkbox("Force Fetch Raw Data (SEC/Yahoo)", value=False)
+k_clusters = st.sidebar.slider("Number of Clusters (K)", 2, 6, 4)
 
-if st.sidebar.button("Run Analysis"):
-    with st.spinner("Running clustering pipeline..."):
+if st.sidebar.button("Execute Research Pipeline"):
+    with st.spinner("Running pipeline and diagnostic suite..."):
+        # 1. Run Core Clustering
         pipeline = SP500RNDClusterPipeline()
-        exclude = [t.strip() for t in exclude_list.split(',') if t.strip()]
+        pipeline.analyzer.kmeans.n_clusters = k_clusters
+        results, figs = pipeline.run(force_refresh=force_refresh, use_whitening=True)
         
-        results, (fig1, fig2) = pipeline.run(
-            exclude_tickers=exclude,
-            force_refresh=force_refresh,
-            use_whitening=use_whitening
-        )
+        # 2. Run Diagnostics
+        diag = AdvancedDiagnostics()
+        stab_df, _ = diag.run_stability_analysis()
+        feat_imp = diag.run_shap_analysis()
         
-        st.success(f"Analysis Complete (Whitening: {use_whitening})")
+        # 3. Save to Session State
+        st.session_state['results'] = results
+        st.session_state['fig1'], st.session_state['fig2'] = figs
+        st.session_state['stab'] = stab_df
+        st.session_state['imp'] = feat_imp
+
+# --- Main Interface ---
+if 'results' in st.session_state:
+    tab1, tab2, tab3 = st.tabs(["Clustering Archetypes", "Model Diagnostics", "Raw Metrics"])
+    
+    with tab1:
+        st.subheader("Market Archetype Visualization")
+        st.plotly_chart(st.session_state['fig1'], use_container_width=True)
+        st.markdown("**Insight:** The 3D plot illustrates the separation of 'Tech Elite' vs 'Pipeline-Compressed' clusters.")
         
+    with tab2:
+        st.subheader("Model Robustness & Feature Drivers")
         col1, col2 = st.columns(2)
         with col1:
-            st.plotly_chart(fig1, use_container_width=True)
+            st.write("Rolling Window Stability (ARI Score):")
+            st.dataframe(st.session_state['stab'])
         with col2:
-            st.plotly_chart(fig2, use_container_width=True)
-        
-        st.subheader("Cluster Distribution")
-        st.bar_chart(results['Cluster'].value_counts())
-        
-        st.subheader("Results Table")
-        st.dataframe(results.style.format({
-            'Returns': '{:.1%}',
-            'Volatility': '{:.1%}',
-            'RnD_Expense_Ratio': '{:.1f}',
-            'RnD_Revenue_Ratio': '{:.1f}'
-        }), use_container_width=True)
-        
-        csv = results.to_csv(index=False)
-        st.download_button("Download CSV", csv, "sp500_clusters.csv", "text/csv")
+            st.write("SHAP Global Feature Importance:")
+            st.bar_chart(st.session_state['imp'].set_index('Feature'))
+            
+    with tab3:
+        st.subheader("Cluster Distribution & Performance")
+        st.write(st.session_state['results'].groupby('Cluster').mean(numeric_only=True))
+        st.dataframe(st.session_state['results'])
+else:
+    st.info("👈 Please execute the pipeline in the sidebar to begin analysis.")
