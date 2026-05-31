@@ -7,7 +7,7 @@ from advanced_diagnostics import AdvancedDiagnostics
 # --- Page Setup ---
 st.set_page_config(layout="wide", page_title="Market Forensics Platform")
 
-st.title("📊 Equity Archetype & Market Diagnostics Platform")
+st.title("Equity Archetype & Market Diagnostics Platform")
 st.markdown("""
 This research platform decomposes S&P 500 fundamentals using unsupervised machine learning to identify 
 structural risk archetypes. We use **PCA-Whitening** to transform features into a decorrelated Mahalanobis space, 
@@ -61,4 +61,4 @@ if 'results' in st.session_state:
         st.write(st.session_state['results'].groupby('Cluster').mean(numeric_only=True))
         st.dataframe(st.session_state['results'])
 else:
-    st.info("👈 Please execute the pipeline in the sidebar to begin analysis.")
+    st.info("Execute the pipeline in the sidebar to begin analysis.")
