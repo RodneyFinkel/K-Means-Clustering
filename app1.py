@@ -15,21 +15,22 @@ st.set_page_config(layout="wide", page_title="Market Forensics Studio")
 
 st.title("Decoupling Two R&D Ratios")
 st.markdown("""
-This entire project is built upon a fundamental quantitative finance paradox: The Multicollinearity vs. Latent Information Dilemma.
+            
+A speculativek-means clustering, with PCA-whitening, analysis on SP500 companies using two financial ratios R&D % of Operating Expenses (Opexe and R&D % of Revenue. Injecting these two ratios into a clustering algorithm alongside price volatility to look for a signal in the possible emergence of new market segments. 
+Cluster stability is evaluated across rolling temporal windows.            
+            
 When looking at financial metrics, a traditional linear regression or simple equity screener treats highly correlated variables as redundant data noise. 
-The two metrics at the center of this study—R&D % of Operating Expenses (Opex) and R&D % of Revenue—are mathematically and economically bound to share a high degree of correlation. 
-If a company scales its research budget, both ratios move upward.
-The core research question is: Does this high correlation mean the second ratio adds zero new information, or can an unsupervised machine learning pipeline strip away the redundant variance to isolate a clean, non-trivial structural market signal?
-The empirical results and the mathematical architecture of this study prove that not only is there a distinct signal, but the divergence between these two ratios is exactly where the most extreme corporate archetypes are isolated.
 
-The Residual: The "meaningful" result is not that they are correlated; it is that certain companies are outliers from that correlation. 
-When you apply PCA Whitening, you are effectively rotating the coordinate system so that the "correlation axis" is one dimension, and the "deviation axis" is another. Your clustering algorithm is finding companies that are "off the line."
+The core question is: Does this high correlation mean the second ratio adds zero new information, or can an unsupervised machine learning pipeline strip away the redundant variance to isolate a clean, non-trivial structural market signal?
+The results and the mathematical architecture of this study might show a distinct signal, but also the divergence between these two ratios is exactly where the most extreme corporate archetypes are isolated.
 
-1. The Core Thesis: Decoupling the Two R&D Ratios
+The Residual: Another meaningful result is not that they are correlated, it is that certain companies are outliers from that correlation. 
+
+Decoupling the Two R&D Ratios
 To understand why these ratios are not redundant, we must first break down the distinct economic realities they measure:
 R&D % of Opex (Internal Budget Prioritization): This metric answers the question: Of the capital allocated to running the daily business operation, how much is dedicated to future innovation versus current maintenance? It reveals strategic intent and structural corporate DNA. A software firm and a manufacturing plant might have identical revenues, but if the software firm commits 45% of its operating footprint to engineering, it is structurally optimized for innovation.
 R&D % of Revenue (Top-Line Reinvestment Intensity & Efficiency): This metric answers the question: How heavily must current sales support the research pipeline, or how dependent is current monetization on continuous laboratory expenditure? It serves as a proxy for corporate maturity and operational leverage.
-If these two ratios were truly redundant, every high-R&D firm would fall into a single, uniform cluster. Instead, the algorithm utilizes the interaction between them to separate mature giants from highly volatile speculations.
+If these two ratios were truly redundant, every high-R&D firm would fall into a single, uniform cluster. Instead, the algorithm uses the interaction between them to separate mature giants from highly volatile speculations.
 
 """)
 
