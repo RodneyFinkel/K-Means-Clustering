@@ -19,9 +19,7 @@ st.markdown("""
 A speculativek-means clustering, with PCA-whitening, analysis on SP500 companies using two financial ratios R&D % of Operating Expenses (Opexe and R&D % of Revenue. Injecting these two ratios into a clustering algorithm alongside price volatility to look for a signal in the possible emergence of new market segments. 
 Cluster stability is evaluated across rolling temporal windows.            
             
-When looking at financial metrics, a traditional linear regression or simple equity screener treats highly correlated variables as redundant data noise. 
-
-The core question is: Does this high correlation mean the second ratio adds zero new information, or can an unsupervised machine learning pipeline strip away the redundant variance to isolate a clean, non-trivial structural market signal?
+The core question is: Do these highly correlated variables mean the second ratio adds zero new information, or can an unsupervised machine learning pipeline strip away the redundant variance to isolate a clean, non-trivial structural market signal?
 The results and the mathematical architecture of this study might show a distinct signal, but also the divergence between these two ratios is exactly where the most extreme corporate archetypes are isolated.
 
 The Residual: Another meaningful result is not that they are correlated, it is that certain companies are outliers from that correlation. 
